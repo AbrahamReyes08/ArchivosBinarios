@@ -155,18 +155,70 @@ public class EmpleadosManager{
         
     }
     
-    
-    
-    private RandomAccessFile billsFilefor(int codigo) throws IOException{
-        String dirPadre = employeeFolder(codigo);
-        return new RandomAccessFile(dirPadre+"/recibos.emp", "rw");
-    }
-    
     public boolean isEmployeePayed(int code) throws IOException{
+        int mes=Calendar.getInstance().get(Calendar.MONTH);
+        RandomAccessFile ventas=salesFileFor(code);
+        long posicion=mes*9+8;
+        ventas.seek(posicion);
+        return ventas.readBoolean();
+    }
+   private long searchEmployee(int code)throws IOException{
+        remps.seek(0);
+        while(remps.getFilePointer()<remps.length()){
+            int codigo=remps.readInt();
+            long posempleado=remps.getFilePointer();
+            remps.readUTF();
+            remps.readDouble();
+            remps.skipBytes(16);
+            if(codigo==code){
+                return posempleado;
+            }
+           
+        }
+        return -1;
+        
+   }
+ 
+
+    public double EmployeePayed(int code) throws IOException{
         int mes = Calendar.getInstance().get(Calendar.MONTH);
         RandomAccessFile ventas = salesFileFor(code);
         long posicion = mes*9+8;
         ventas.seek(posicion);
-        return ventas.readBoolean();
+        double newSales=ventas.readDouble();
+        ventas.writeBoolean(true);
+        return newSales;
     }
+    private RandomAccessFile billsFilefor(int codigo) throws IOException{
+        String dirPadre = employeeFolder(codigo);
+        return new RandomAccessFile(dirPadre+"/recibos.emp", "rw");
+    }
+
+
+
+  public void payEmployee(int code) throws IOException{
+        if(isEmployeeActive(code)){
+            
+           if(isEmployeePayed(code)==false){
+               long date=Calendar.getInstance().getTimeInMillis();
+               double sueldo=0;
+               remps.seek(searchEmployee(code));
+               String nombre=remps.readUTF();
+               sueldo=remps.readDouble();
+               double deduccion=sueldo*0.035;
+               int year=Calendar.getInstance().get(Calendar.YEAR);
+               int mes=Calendar.getInstance().get(Calendar.MONTH);
+               double bono=EmployeePayed(code);
+               double pagoTotal=deduccion+bono;
+               System.out.println("Nombre del Empleado: "+nombre);
+               System.out.println("Pago Total del Empleado: "+pagoTotal);
+               RandomAccessFile bills=billsFilefor(code);
+               bills.writeLong(date);
+               bills.writeDouble(sueldo);
+               bills.writeDouble(deduccion);
+               bills.writeInt(year);
+               bills.writeInt(mes);
+           }
+        }
+  }
 }

@@ -4,14 +4,18 @@
  */
 package archivosbinarios;
 
+import java.io.IOException;
 import java.io.PrintStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 /**
  *
  * @author dell
  */
 public class PagarEmpleado extends javax.swing.JFrame {
-
+EmpleadosManager emp= new EmpleadosManager();
     /**
      * Creates new form PagarEmpleado
      */
@@ -78,8 +82,12 @@ public class PagarEmpleado extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void aceptarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aceptarActionPerformed
-        String  code=codeField.getText();
-
+        int code=Integer.valueOf(codeField.getText());
+    try {
+        emp.payEmployee(code);
+    } catch (IOException ex) {
+             JOptionPane.showMessageDialog(null, "Error al agregar la venta ");
+    }
     }//GEN-LAST:event_aceptarActionPerformed
 
     private void volverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_volverActionPerformed
